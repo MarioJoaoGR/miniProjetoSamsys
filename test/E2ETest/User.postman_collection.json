@@ -1,0 +1,1257 @@
+{
+	"info": {
+		"_postman_id": "b5121414-899f-4881-a94c-b2b9f5c36ff2",
+		"name": "User",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39021741"
+	},
+	"item": [
+		{
+			"name": "Login Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"Token\", jsonData.token);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"admin@teste.com\",\r\n    \"password\": \"password\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Login/login",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Login",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Patient",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"id\", jsonData.id);\r",
+							"pm.globals.set(\"MedicalRecordNumber\", jsonData.medicalRecordNumber);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"firstName\": \"John\",\r\n  \"lastName\": \"Doe\",\r\n  \"fullName\": \"John Doe\",\r\n  \"dateOfBirth\": \"1990-01-01\",\r\n  \"gender\": \"male\",\r\n  \"email\": \"rodrigopontescardoso@gmail.com\",\r\n  \"phoneNumber\": \"+351 123456789\",\r\n  \"street\": \"Main Street\",\r\n  \"postalCode\": \"1234-123\",\r\n  \"city\": \"Porto\",\r\n  \"country\": \"Portugal\",\r\n  \"emergencyContactName\": \"Jane Doe\",\r\n  \"emergencyContactEmail\": \"jane.doe@gmail.com\",\r\n  \"emergencyContactPhoneNumber\": \"+351 123789456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Patients",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Patients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Fails 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Patient User Profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"ConfirmationToken\", jsonData.token);\r",
+							"pm.globals.set(\"ConfirmationEmail\", jsonData.email);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"John Doe\",\r\n  \"email\": \"rodrigopontescardoso@gmail.com\",\r\n  \"phoneNumber\": \"+351 123456789\",\r\n  \"password\": \"ProjectGroup55/\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Patient User Profile Confirmation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);\r",
+							"pm.globals.set(\"id\", jsonData.id);\r",
+							"pm.globals.set(\"Email\", jsonData.email);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/confirm?token={{ConfirmationToken}}&email={{ConfirmationEmail}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"confirm"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{ConfirmationToken}}"
+						},
+						{
+							"key": "email",
+							"value": "{{ConfirmationEmail}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Works 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login Patient",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"Token\", jsonData.token);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{Email}}\",\r\n    \"password\": \"ProjectGroup55/\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Login/login",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Login",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{Email}}\",\r\n    \"nameToEdit\": \"Rodrigo Cardoso\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Works 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"ConfirmationToken\", jsonData.token);\r",
+							"pm.globals.set(\"EmailToEdit\", jsonData.emailToEdit);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{Email}}\",\r\n    \"emailToEdit\": \"lafirmaptoficial@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 2 Confirmation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);\r",
+							"pm.globals.set(\"Email\", jsonData.email);\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit/confirm?token={{ConfirmationToken}}&email={{Email}}&emailToEdit={{EmailToEdit}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit",
+						"confirm"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{ConfirmationToken}}"
+						},
+						{
+							"key": "email",
+							"value": "{{Email}}"
+						},
+						{
+							"key": "emailToEdit",
+							"value": "{{EmailToEdit}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Works 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"ConfirmationToken\", jsonData.token);\r",
+							"pm.globals.set(\"PhoneNumberToEdit\", jsonData.phoneNumberToEdit);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{Email}}\",\r\n    \"phoneNumberToEdit\": \"+351 987654321\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 3 Confirmation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit/confirm?token={{ConfirmationToken}}&email={{Email}}&phoneNumberToEdit={{PhoneNumberToEdit}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit",
+						"confirm"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{ConfirmationToken}}"
+						},
+						{
+							"key": "email",
+							"value": "{{Email}}"
+						},
+						{
+							"key": "phoneNumberToEdit",
+							"value": "{{PhoneNumberToEdit}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Works 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"ConfirmationToken\", jsonData.token);\r",
+							"pm.globals.set(\"EmailToEdit\", jsonData.emailToEdit);\r",
+							"pm.globals.set(\"PhoneNumberToEdit\", jsonData.phoneNumberToEdit);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{Email}}\",\r\n    \"nameToEdit\": \"John Doe\",\r\n    \"emailToEdit\": \"rodrigopontescardoso@gmail.com\",\r\n    \"phoneNumberToEdit\": \"+351 123456789\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Patient 4 Confirmation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);\r",
+							"pm.globals.set(\"Email\", jsonData.email);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"token\": \"{{ConfirmationToken}}\",\r\n    \"email\": \"{{Email}}\",\r\n    \"emailToEdit\": \"{{EmailToEdit}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/edit/confirm?token={{ConfirmationToken}}&email={{Email}}&emailToEdit={{EmailToEdit}}&phoneNumberToEdit={{PhoneNumberToEdit}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"edit",
+						"confirm"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{ConfirmationToken}}"
+						},
+						{
+							"key": "email",
+							"value": "{{Email}}"
+						},
+						{
+							"key": "emailToEdit",
+							"value": "{{EmailToEdit}}"
+						},
+						{
+							"key": "phoneNumberToEdit",
+							"value": "{{PhoneNumberToEdit}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Works 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"console.log(jsonData);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Patient",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.globals.set(\"ConfirmationToken\", jsonData.token);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/delete/{{Email}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"delete",
+						"{{Email}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Patient Confirmation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/patients/delete/confirm?token={{ConfirmationToken}}&email={{Email}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"patients",
+						"delete",
+						"confirm"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{ConfirmationToken}}"
+						},
+						{
+							"key": "email",
+							"value": "{{Email}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User By Id Fails 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.9.10.55:5000/api/Users/{{id}}",
+					"protocol": "http",
+					"host": [
+						"10",
+						"9",
+						"10",
+						"55"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Users",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
