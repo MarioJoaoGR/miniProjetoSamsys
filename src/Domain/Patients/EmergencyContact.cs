@@ -1,5 +1,5 @@
+using DDDNetCore.Domain.Authors;
 using DDDSample1.Domain.Shared;
-using DDDSample1.Domain.Utils;
 using System;
 
 namespace DDDSample1.Domain.Patients

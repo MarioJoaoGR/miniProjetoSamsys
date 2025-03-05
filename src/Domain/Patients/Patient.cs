@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using DDDNetCore.Domain.Authors;
 using DDDSample1.Domain.Shared;
-using DDDSample1.Domain.Utils;
 using EllipticCurve.Utils;
 using Microsoft.Extensions.Logging.Configuration;
 
