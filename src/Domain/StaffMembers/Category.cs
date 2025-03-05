@@ -5,6 +5,7 @@ namespace DDDSample1.Domain.StaffMembers
         Doctor,
         InternDoctor,
         Nurse,
-        Technician
+        Technician,
+        mario
     }
 }
