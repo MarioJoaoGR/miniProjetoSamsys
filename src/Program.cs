@@ -1,8 +1,4 @@
-﻿using DDDSample1.Domain.Patients;
-using DDDSample1.Domain.Shared;
-using DDDSample1.Domain.StaffMembers;
-using DDDSample1.Infrastructure.Patients;
-using DDDSample1.Infrastructure.StaffMembers;
+﻿using DDDSample1.Domain.Shared;
 using DDDSample1.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,12 +79,6 @@ namespace DDDSample1.Startup
         static void ConfigureMyServices(IServiceCollection services)
         {
             services.AddTransient<IUnitOfWork, UnitOfWork>();
-
-            services.AddTransient<IPatientRepository, PatientRepository>();
-            services.AddTransient<IPatientService, PatientService>();
-
-            services.AddTransient<IStaffRepository, StaffRepository>();
-            services.AddTransient<IStaffService, StaffService>();
 
             services.AddTransient<IBookRepository, BookRepository>();
             services.AddTransient<IBookService, BookService>();

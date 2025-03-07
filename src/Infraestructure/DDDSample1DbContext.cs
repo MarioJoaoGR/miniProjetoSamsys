@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-using DDDSample1.Domain.Patients;
-using DDDSample1.Infrastructure.Patients;
-using DDDSample1.Domain.StaffMembers;
-using DDDSample1.Infrastructure.StaffMembers;
+
 using DDDNetCore.Domain.Books;
 using DDDNetCore.Domain.Authors;
 using DDDNetCore.Infrastructure.Authors;
@@ -19,10 +16,6 @@ namespace DDDSample1.Infrastructure
 
         public DbSet<Book> Books { get; set; }
         public DbSet<Author> Authors { get; set; }
-        public DbSet<Staff> StaffMembers { get; set; }
-
-        public DbSet<Patient> Patients { get; set; }
-
 
         public DDDSample1DbContext(DbContextOptions options) : base(options)
         {
@@ -32,8 +25,6 @@ namespace DDDSample1.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
            
-            modelBuilder.ApplyConfiguration(new PatientEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new StaffEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BookEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AuthorEntityTypeConfiguration());
 

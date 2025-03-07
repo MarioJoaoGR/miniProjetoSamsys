@@ -10,6 +10,7 @@ namespace DDDNetCore.Domain.Books
         public Title Title { get; private set; }
         public String AuthorId { get; private set; }
         public Value Value { get; private set; }
+        public BookStatus bookStatus { get; private set; }
 
         private Book() { }
 
@@ -20,6 +21,7 @@ namespace DDDNetCore.Domain.Books
             this.Title = new Title(title);
             this.AuthorId = authorId;
             this.Value = new Value(price);
+            this.bookStatus = BookStatus.Active;
         }
 
         public void ChangeIsbn(string isbn)
@@ -40,6 +42,15 @@ namespace DDDNetCore.Domain.Books
         public void ChangeValue(string value)
         {
             this.Value = new Value(value);
+        }
+
+        public void Deactivate()
+        {
+            this.bookStatus = BookStatus.Inactive;
+        }
+        public void Activate()
+        {
+            this.bookStatus = BookStatus.Active;
         }
     }
 }

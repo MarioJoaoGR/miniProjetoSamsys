@@ -13,6 +13,11 @@ namespace DDDNetCore.Infrastructure.Authors
             {
                 fullName.Property(f => f.fullName).IsRequired();
             });
+            builder.OwnsOne(a => a.NIF, nif =>
+            {
+                nif.Property(n => n.nif).IsRequired();
+                nif.HasIndex(n => n.nif).IsUnique();
+            });
         }
     }
 }

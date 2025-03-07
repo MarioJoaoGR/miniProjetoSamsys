@@ -1,6 +1,10 @@
-﻿namespace DDDNetCore.Domain.Books
+﻿using System.Threading.Tasks;
+using DDDSample1.Domain.Shared;
+
+namespace DDDNetCore.Domain.Books
 {
-    public interface IBookRepository
+    public interface IBookRepository : IRepository<Book, BookId>
     {
+        Task<Book> GetByIsbnAsync(string isbn);
     }
 }
