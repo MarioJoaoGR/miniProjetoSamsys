@@ -33,7 +33,12 @@ namespace DDDNetCore.Domain.Books
 
             await checkAuthorByNIFAsync(dto.AuthorNIF, dto);
 
+            
+
+
             var book = new Book(dto.Isbn, dto.Title, dto.AuthorNIF, dto.Value);
+
+           
 
             await _bookRepository.AddAsync(book);
             await _unitOfWork.CommitAsync();
@@ -118,11 +123,11 @@ namespace DDDNetCore.Domain.Books
         }
 
 
-        public async Task<Author> checkAuthorByNIFAsync(string name, CreatingBookDto book)
+        public async Task<Author> checkAuthorByNIFAsync(string nif, CreatingBookDto book)
         {
             try
             {
-                var author = await _authorRepository.GetByNIFAsync(name);
+                var author = await _authorRepository.GetByNIFAsync(nif);
                 if (author == null)
                 {
                     throw new BusinessRuleValidationException("Author not found");
@@ -183,7 +188,36 @@ namespace DDDNetCore.Domain.Books
             return listDto;
 
         }
+
+        public async Task<BookDto> DeleteAsync(BookId id)
+        {
+            var book = await _bookRepository.GetByIdAsync(id);
+            
+            var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
+            var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
+
+            if (book == null)
+            {
+                throw new BusinessRuleValidationException("Book not found");
+            }
+
+            if (book.bookStatus == BookStatus.Inactive)
+            {
+                throw new BusinessRuleValidationException("Book is already inactive");
+            }
+
+
+            book.Deactivate();
+
+            await _unitOfWork.CommitAsync();
+
+
+            return BookMapper.toDto(book, authorNIF, authorName);
+        }
     }
+
+
+
 }
 
 

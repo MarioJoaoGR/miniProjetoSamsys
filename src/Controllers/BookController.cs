@@ -38,6 +38,23 @@ namespace DDDNetCore.Controllers
           
         }
 
+        [HttpDelete("{id}")]
+
+        public async Task<ActionResult> Delete(string id)
+        {
+            try
+            {
+                var book = await _service.DeleteAsync(new BookId(id));
+               return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+
+
+        }
+
         [HttpPut("{id}")]
        
         public async Task<ActionResult<BookDto>> Update(EditingBookDto dto, Guid id)
