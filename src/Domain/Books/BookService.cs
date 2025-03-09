@@ -23,7 +23,7 @@ namespace DDDNetCore.Domain.Books
 
         public async Task<BookDto> AddAsync(CreatingBookDto dto)
         {
-          bool isbnIsUnique = await validateIsbnIsUnique(dto.Isbn);
+            bool isbnIsUnique = await validateIsbnIsUnique(dto.Isbn);
             if (!isbnIsUnique)
             {
                 throw new BusinessRuleValidationException("Isbn already exists");
@@ -33,17 +33,17 @@ namespace DDDNetCore.Domain.Books
 
             await checkAuthorByNIFAsync(dto.AuthorNIF, dto);
 
-            
+
 
 
             var book = new Book(dto.Isbn, dto.Title, dto.AuthorNIF, dto.Value);
 
-           
+
 
             await _bookRepository.AddAsync(book);
             await _unitOfWork.CommitAsync();
 
-            return BookMapper.toDto(book, authorNIF,authorName);
+            return BookMapper.toDto(book, authorNIF, authorName);
 
         }
 
@@ -58,12 +58,12 @@ namespace DDDNetCore.Domain.Books
             }
 
 
-            
+
 
             if (!string.IsNullOrWhiteSpace(dto.Title) && !book.Title.title.Equals(dto.Title))
             {
                 book.ChangeTitle(dto.Title);
-                
+
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Isbn) && !book.Isbn.isbn.Equals(dto.Isbn))
@@ -74,7 +74,7 @@ namespace DDDNetCore.Domain.Books
                     throw new BusinessRuleValidationException("Isbn already exists");
                 }
                 book.ChangeIsbn(dto.Isbn);
-                
+
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Value) && !book.Value.value.Equals(dto.Value))
@@ -83,13 +83,14 @@ namespace DDDNetCore.Domain.Books
             }
 
 
-            if (!string.IsNullOrWhiteSpace(dto.AuthorNIF)){
+            if (!string.IsNullOrWhiteSpace(dto.AuthorNIF))
+            {
 
                 await checkAuthorByNIFForEditingAsync(dto.AuthorNIF, dto);
                 if (!book.AuthorId.Equals(dto.AuthorNIF))
                 {
                     book.ChangeAuthor(dto.AuthorNIF);
-                } 
+                }
             }
 
             var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
@@ -110,6 +111,34 @@ namespace DDDNetCore.Domain.Books
 
 
         }
+
+
+        public async Task<BookDto> DeleteAsync(BookId id)
+        {
+            var book = await _bookRepository.GetByIdAsync(id);
+
+            var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
+            var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
+
+            if (book == null)
+            {
+                throw new BusinessRuleValidationException("Book not found");
+            }
+
+            if (book.bookStatus == BookStatus.Inactive)
+            {
+                throw new BusinessRuleValidationException("Book is already inactive");
+            }
+
+
+            book.Deactivate();
+
+            await _unitOfWork.CommitAsync();
+
+
+            return BookMapper.toDto(book, authorNIF, authorName);
+        }
+
 
 
         public async Task<BookDto> GetByIdAsync(BookId id)
@@ -188,33 +217,9 @@ namespace DDDNetCore.Domain.Books
             return listDto;
 
         }
-
-        public async Task<BookDto> DeleteAsync(BookId id)
-        {
-            var book = await _bookRepository.GetByIdAsync(id);
-            
-            var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-            var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
-
-            if (book == null)
-            {
-                throw new BusinessRuleValidationException("Book not found");
-            }
-
-            if (book.bookStatus == BookStatus.Inactive)
-            {
-                throw new BusinessRuleValidationException("Book is already inactive");
-            }
-
-
-            book.Deactivate();
-
-            await _unitOfWork.CommitAsync();
-
-
-            return BookMapper.toDto(book, authorNIF, authorName);
-        }
     }
+
+        
 
 
 
