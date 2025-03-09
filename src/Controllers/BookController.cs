@@ -38,6 +38,27 @@ namespace DDDNetCore.Controllers
           
         }
 
+        [HttpPut("{id}")]
+       
+        public async Task<ActionResult<BookDto>> Update(EditingBookDto dto, Guid id)
+        {
+            if (id != dto.Id)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var book = await _service.UpdateAsync(dto);
+
+                return Ok(book);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDto>> GetGetById(string id)
         {

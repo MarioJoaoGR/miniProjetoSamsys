@@ -17,7 +17,7 @@ namespace DDDNetCore.Domain.Authors
 
         private void validateNIF(string nif)
         {
-            Console.WriteLine($"A validar NIF: {nif}");
+           
 
             if (string.IsNullOrWhiteSpace(nif))
                 throw new BusinessRuleValidationException("O NIF não pode estar vazio.");
