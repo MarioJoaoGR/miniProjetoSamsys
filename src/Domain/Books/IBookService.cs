@@ -8,6 +8,7 @@ namespace DDDNetCore.Domain.Books
         Task<BookDto> AddAsync(CreatingBookDto dto);
         Task<BookDto> DeleteAsync(BookId id);
         Task<BookDto> UpdateAsync(EditingBookDto dto);
+        Task<List<BookDto>> SearchAsync(BookFilterDto dto);
         Task<BookDto> GetByIdAsync(BookId id);
         Task<List<BookDto>> GetAllAsync();
     }
