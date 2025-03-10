@@ -1,0 +1,179 @@
+{
+	"info": {
+		"_postman_id": "96a9edc7-f731-4344-a5c3-a86f3e568948",
+		"name": "Books",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39315870"
+	},
+	"item": [
+		{
+			"name": "GetAll",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtém a resposta JSON do request\r",
+							"let jsonData = pm.response.json();\r",
+							"\r",
+							"// Exibe a resposta JSON no console para verificação\r",
+							"console.log(\"Resposta JSON:\", jsonData);\r",
+							"\r",
+							"// Verifica se a resposta é um array e tem pelo menos dois elementos\r",
+							"pm.test(\"Response contains at least two books\", function () {\r",
+							"    pm.expect(jsonData).to.be.an('array').with.length.of.at.least(2);\r",
+							"});\r",
+							"\r",
+							"// Guarda os IDs dos dois primeiros livros como variáveis de ambiente\r",
+							"pm.environment.set(\"book1\", jsonData[0].id);\r",
+							"pm.environment.set(\"book2\", jsonData[1].id);\r",
+							"\r",
+							"// Verifica se o primeiro livro tem a chave \"authorNIF\" e se a variável foi armazenada corretamente\r",
+							"if (jsonData[0] && jsonData[0].authorNIF) {\r",
+							"    pm.environment.set(\"authorNif\", jsonData[0].authorNIF);\r",
+							"    console.log(\"authorNif armazenado:\", jsonData[0].authorNIF);\r",
+							"} else {\r",
+							"    console.warn(\"A chave 'authorNIF' não foi encontrada no primeiro livro ou é nula.\");\r",
+							"}\r",
+							"\r",
+							"// Verifica se a variável de ambiente foi realmente armazenada\r",
+							"pm.test(\"authorNif deve ser uma variável válida\", function () {\r",
+							"    pm.expect(pm.environment.get(\"authorNif\")).to.not.be.null;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/Book/GetAll",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Book",
+						"GetAll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetById",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/Book/{{book1}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Book",
+						"{{book1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateBook",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"isbn\": \"978-1-491-94780-5\",\r\n  \"title\": \"Artificial Intelligence: A Modern Approach\",\r\n  \"authorNIF\": \"{{authorNif}}\",\r\n  \"value\": \"39,99\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/Book",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateBook",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"{{book1}}\",\r\n  \"isbn\": \"978-1-59327-928-8 \",\r\n  \"title\": \"OlaBoas\",\r\n  \"authorNIF\": \"\",\r\n  \"value\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/Book/{{book1}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Book",
+						"{{book1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteBook",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/Book/{{book1}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"Book",
+						"{{book1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "FilterBook",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
