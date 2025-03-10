@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DDDNetCore.Domain.Authors;
 using DDDSample1.Domain.Shared;
@@ -139,6 +140,66 @@ namespace DDDNetCore.Domain.Books
             return BookMapper.toDto(book, authorNIF, authorName);
         }
 
+        public async Task<List<BookDto>> SearchAsync(BookFilterDto dto)
+        {
+            Console.WriteLine($"Filtros recebidos -> ISBN: {dto.Isbn}, Title: {dto.Title}, AuthorName: {dto.AuthorName}, ValueOrder: {dto.ValueOrder}");
+            var books = new List<Book>();
+
+            // Se nenhum filtro for fornecido, retorna todos os livros
+            if (string.IsNullOrWhiteSpace(dto.Isbn) &&
+                string.IsNullOrWhiteSpace(dto.Title) &&
+                string.IsNullOrWhiteSpace(dto.AuthorName) &&
+                string.IsNullOrWhiteSpace(dto.ValueOrder))
+            {
+                books = await _bookRepository.GetAllAsync();
+            }
+            else
+            {
+        
+                // Filtragem inicial pelos filtros de ISBN e título
+                books = await _bookRepository.GetByFiltersAsync(dto.Isbn, dto.Title);
+
+                // Se um nome de autor foi fornecido, filtramos os livros pelos autores encontrados
+                if (!string.IsNullOrWhiteSpace(dto.AuthorName))
+                {
+                    var authorList = await _authorRepository.FilterByNameAsync(dto.AuthorName);
+                    var authorIds = authorList.Select(a => a.Id.Value).ToList();
+
+                    // Filtra os livros que têm um authorId que corresponde aos autores encontrados
+                    books = books.Where(b => authorIds.Contains(b.AuthorId)).ToList();
+                }
+            }
+
+            // Se houver ordenação por preço, aplicamos a ordenação no final
+            if (!string.IsNullOrWhiteSpace(dto.ValueOrder))
+            {
+                books = OrderByValue(books, dto.ValueOrder);
+            }
+
+
+            // Convert the list of string authorIds to a list of AuthorId objects
+            var authorIdsToLoad = books.Select(b => new AuthorId(b.AuthorId)).Distinct().ToList();
+            var authors = await _authorRepository.GetByIdsAsync(authorIdsToLoad);
+            var authorDictionary = authors.ToDictionary(a => a.Id.Value, a => a);
+
+            // Mapeando os livros para DTOs
+            var result = new List<BookDto>();
+
+            foreach (var book in books)
+            {
+                // Recupera o autor diretamente do dicionário
+                var author = authorDictionary[book.AuthorId];
+
+                // Mapeando o livro para DTO
+                var bookDto = BookMapper.toDto(book, author.NIF.nif, author.FullName.fullName);
+
+                result.Add(bookDto);
+            }
+
+            return result;
+        }
+
+
 
 
         public async Task<BookDto> GetByIdAsync(BookId id)
@@ -217,11 +278,25 @@ namespace DDDNetCore.Domain.Books
             return listDto;
 
         }
+    
+
+    public List<Book> OrderByValue(List<Book> books, string valueOrder)
+        {
+            if (valueOrder.ToLower() == "increasing")
+            {
+                return books.OrderBy(b => decimal.Parse(b.Value.value)).ToList();
+            }
+            else if (valueOrder.ToLower() == "decreasing")
+            {
+                return books.OrderByDescending(b => decimal.Parse(b.Value.value)).ToList();
+            }
+
+            return books; // Retorna sem ordenação se o parâmetro for inválido.
+        }
+
+
+
     }
-
-        
-
-
 
 }
 

@@ -76,6 +76,17 @@ namespace DDDNetCore.Controllers
             }
         }
 
+        
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<BookDto>>> SearchAsync([FromQuery] BookFilterDto dto)
+        {
+            Console.WriteLine($"Filtros recebidos -> ISBN: {dto.Isbn}, Title: {dto.Title}, AuthorName: {dto.AuthorName}, ValueOrder: {dto.ValueOrder}");
+            return await _service.SearchAsync(dto);
+        }
+
+
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDto>> GetGetById(string id)
         {
