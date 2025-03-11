@@ -17,8 +17,6 @@ namespace DDDNetCore.Domain.Authors
 
         private void validateNIF(string nif)
         {
-           
-
             if (string.IsNullOrWhiteSpace(nif))
                 throw new BusinessRuleValidationException("O NIF não pode estar vazio.");
 
@@ -40,7 +38,7 @@ namespace DDDNetCore.Domain.Authors
             }
 
             int digitoVerificacao = 11 - (soma % 11);
-            if (digitoVerificacao >= 10) digitoVerificacao = 0;
+            if (digitoVerificacao == 10) digitoVerificacao = 0;
 
             return digitoVerificacao == (nif[8] - '0');
         }
