@@ -11,5 +11,8 @@ namespace DDDNetCore.Domain.Books
         Task<List<BookDto>> SearchAsync(BookFilterDto dto);
         Task<BookDto> GetByIdAsync(BookId id);
         Task<List<BookDto>> GetAllAsync();
+        Task<List<BookDto>> GetAllActiveAsync();
+        Task<List<BookDto>> GetAllInactiveAsync();
+
     }
 }

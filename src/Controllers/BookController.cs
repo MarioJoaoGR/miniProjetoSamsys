@@ -80,7 +80,7 @@ namespace DDDNetCore.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<BookDto>>> SearchAsync([FromQuery] BookFilterDto dto)
         {
-            Console.WriteLine($"Filtros recebidos -> ISBN: {dto.Isbn}, Title: {dto.Title}, AuthorName: {dto.AuthorName}, ValueOrder: {dto.ValueOrder}");
+           
             return await _service.SearchAsync(dto);
         }
 
@@ -108,5 +108,17 @@ namespace DDDNetCore.Controllers
             return await _service.GetAllAsync();
         }
 
+        [HttpGet("GetAllActive")]
+        public async Task<ActionResult<IEnumerable<BookDto>>> GetAllActive()
+        {
+            return await _service.GetAllActiveAsync();
+        }
+
+        [HttpGet("GetAllInactive")]
+        public async Task<ActionResult<IEnumerable<BookDto>>> GetAllInactive()
+        {
+            return await _service.GetAllInactiveAsync();
+
+        }
     }
 }

@@ -142,7 +142,7 @@ namespace DDDNetCore.Domain.Books
 
         public async Task<List<BookDto>> SearchAsync(BookFilterDto dto)
         {
-            Console.WriteLine($"Filtros recebidos -> ISBN: {dto.Isbn}, Title: {dto.Title}, AuthorName: {dto.AuthorName}, ValueOrder: {dto.ValueOrder}");
+            
             var books = new List<Book>();
 
             // Se nenhum filtro for fornecido, retorna todos os livros
@@ -278,9 +278,41 @@ namespace DDDNetCore.Domain.Books
             return listDto;
 
         }
-    
 
-    public List<Book> OrderByValue(List<Book> books, string valueOrder)
+        public async Task<List<BookDto>> GetAllActiveAsync()
+        {
+            var list = await _bookRepository.GetAllActiveAsync();
+
+            List<BookDto> listDto = new List<BookDto>();
+
+            foreach (Book book in list)
+            {
+                var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
+                var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
+                listDto.Add(BookMapper.toDto(book, authorNIF, authorName));
+            }
+            return listDto;
+
+        }
+
+        public async Task<List<BookDto>> GetAllInactiveAsync()
+        {
+            var list = await _bookRepository.GetAllInactiveAsync();
+
+            List<BookDto> listDto = new List<BookDto>();
+
+            foreach (Book book in list)
+            {
+                var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
+                var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
+                listDto.Add(BookMapper.toDto(book, authorNIF, authorName));
+            }
+            return listDto;
+
+        }
+
+
+        public List<Book> OrderByValue(List<Book> books, string valueOrder)
         {
             if (valueOrder.ToLower() == "increasing")
             {

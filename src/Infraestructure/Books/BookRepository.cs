@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using SendGrid.Helpers.Mail;
 
 namespace DDDNetCore.Infraestructure.Books
 {
@@ -44,6 +45,22 @@ namespace DDDNetCore.Infraestructure.Books
 
             return await query.ToListAsync();
         }
+
+        public async Task<List<Book>> GetAllActiveAsync()
+        {
+            return await this.context.Set<Book>()
+                .Where(b => b.bookStatus == BookStatus.Active)
+                .ToListAsync();
+        }
+
+        public async Task<List<Book>> GetAllInactiveAsync()
+        {
+            return await this.context.Set<Book>()
+                .Where(b => b.bookStatus == BookStatus.Inactive)
+                .ToListAsync();
+        }
+
+
 
 
 
