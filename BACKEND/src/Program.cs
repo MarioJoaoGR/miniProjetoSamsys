@@ -26,6 +26,18 @@ namespace DDDSample1.Startup
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Adicionar CORS para permitir chamadas do frontend React
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000") // 🔥 Permite chamadas do frontend
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+
             // Adicionar o contexto de banco de dados
             var useInMemoryDatabase = builder.Configuration.GetValue<bool>("DatabaseSettings:UseInMemoryDatabase");
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
