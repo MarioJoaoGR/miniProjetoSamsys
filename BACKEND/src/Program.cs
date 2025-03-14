@@ -81,6 +81,7 @@ namespace DDDSample1.Startup
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors("AllowReactApp");
             app.UseMiddleware<CustomExceptionMiddleware>();
 
             app.MapControllers();
