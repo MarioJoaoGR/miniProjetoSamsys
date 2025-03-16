@@ -1,23 +1,21 @@
-import React, { useEffect, useState } from "react";
-import api from "./services/api";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Books from "./pages/Books";
+import BookDetails from "./pages/BookDetails"; // Importando a página de detalhes
+import EditBook from "./pages/EditBook"; // Importando a página de edição
+import InsertBook from "./pages/InsertBook"; // Importando a página de inserção
 
 function App() {
-  const [data, setData] = useState<string>("");
-
-  useEffect(() => {
-    api.get("http://localhost:5000/api/Book/GetAll")
-      .then(response => {
-        console.log("Resposta do backend:", response.data); // 🟢 Verificar se há dados
-        setData(JSON.stringify(response.data, null, 2)); // Formatar JSON
-      })
-      .catch(error => console.error("Erro ao buscar dados:", error));
-  }, []);
-
   return (
-    <div>
-      <h1>Frontend React + TypeScript</h1>
-      <p>Dados do backend: {data}</p>
-    </div>
+    <Router> {/* Envolvendo todas as rotas com Router */}
+      <Routes> {/* Definindo as rotas */}
+        <Route path="/" element={<Home />} /> {/* Página inicial */}
+        <Route path="/books" element={<Books />} /> {/* Página de livros */}
+        <Route path="/book/:id" element={<BookDetails />} /> {/* Detalhes do livro */}
+        <Route path="/edit-book/:id" element={<EditBook />} /> {/* Editar livro */}
+        <Route path="/insert-book" element={<InsertBook />} /> {/* Inserir livro */}
+      </Routes>
+    </Router>
   );
 }
 

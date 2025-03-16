@@ -151,7 +151,7 @@ namespace DDDNetCore.Domain.Books
                 string.IsNullOrWhiteSpace(dto.AuthorName) &&
                 string.IsNullOrWhiteSpace(dto.ValueOrder))
             {
-                books = await _bookRepository.GetAllAsync();
+                books = await _bookRepository.GetAllActiveAsync();
             }
             else
             {

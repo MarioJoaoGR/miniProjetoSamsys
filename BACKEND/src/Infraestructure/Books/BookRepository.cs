@@ -31,6 +31,9 @@ namespace DDDNetCore.Infraestructure.Books
         {
             var query = this.context.Books.AsQueryable();
 
+            // Filtrar apenas livros ativos
+            query = query.Where(b => b.bookStatus == BookStatus.Active);
+
             // Filtro por ISBN - Deve começar com a string fornecida
             if (!string.IsNullOrWhiteSpace(isbn))
             {

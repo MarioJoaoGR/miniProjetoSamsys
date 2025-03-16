@@ -27,7 +27,7 @@ public static class DataSeeder
         new Author("Alice Johnson", "245083600"),
         new Author("Robert Brown", "808321234"),
         new Author("Emily White", "543210987"),
-        new Author("Michael Green", "543210987")
+        new Author("Michael Green", "210310944")
     };
 
         // Adicionar autores ao contexto
@@ -49,7 +49,7 @@ public static class DataSeeder
         // Adicionar livros ao contexto
         context.Books.AddRange(books);
 
-        // Salvar as alterações no banco de dados
+        // Salvar as alteraï¿½ï¿½es no banco de dados
         await context.SaveChangesAsync();
     }
 
