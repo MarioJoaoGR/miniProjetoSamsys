@@ -21,8 +21,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore backend
+      run: dotnet restore backend/src/DDDNetCore.csproj
     - name: Build
-      run: dotnet build backend --no-restore 
+      run: dotnet build backend/src/DDDNetCore.csproj --no-restore 
     - name: Test
-      run: dotnet test backend --no-build --verbosity normal
+      run: dotnet test backend/src/DDDNetCore.csproj --no-build --verbosity normal
