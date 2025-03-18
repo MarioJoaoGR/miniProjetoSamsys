@@ -13,19 +13,27 @@ namespace DDDNetCore.Domain.Books
             this.isbn = isbn;
         }
 
-        public bool ValidateIsbn(string isbn)
+        public void ValidateIsbn(string isbn)
         {
             if (string.IsNullOrWhiteSpace(isbn))
-                return false;
+                throw new BusinessRuleValidationException("ISBN cannot be empty.");
 
             isbn = isbn.Replace("-", "").Replace(" ", ""); // Remove traços e espaços
 
             if (isbn.Length == 10)
-                return IsValidIsbn10(isbn);
+            {
+                if (!IsValidIsbn10(isbn))
+                    throw new BusinessRuleValidationException("Invalid ISBN-10 format.");
+            }
             else if (isbn.Length == 13)
-                return IsValidIsbn13(isbn);
-
-            return false;
+            {
+                if (!IsValidIsbn13(isbn))
+                    throw new BusinessRuleValidationException("Invalid ISBN-13 format.");
+            }
+            else
+            {
+                throw new BusinessRuleValidationException("ISBN must be either 10 or 13 characters long.");
+            }
         }
 
         private bool IsValidIsbn10(string isbn)

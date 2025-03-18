@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createBook } from "../services/bookService";
-import { getAllAuthors } from "../services/authorService"; // Importa a função para buscar autores
+import { getAllAuthors } from "../services/authorService";
 import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
 
@@ -16,13 +16,14 @@ const InsertBook = () => {
   });
 
   const [authors, setAuthors] = useState<{ nif: string; fullName: string }[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Novo estado para mensagens de erro
 
   // Buscar os autores ao carregar a página
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
         const authorsData = await getAllAuthors();
-        setAuthors(authorsData); // Atualiza o estado com os autores obtidos
+        setAuthors(authorsData);
       } catch (error) {
         console.error("Erro ao buscar autores:", error);
       }
@@ -38,8 +39,12 @@ const InsertBook = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createBook(book.isbn, book.title, book.authorNif, book.value);
-    navigate("/books");
+    try {
+      await createBook(book.isbn, book.title, book.authorNif, book.value);
+      navigate("/books"); // Redireciona após a criação
+    } catch (error) {
+      setErrorMessage("Failed to insert Book!" ); // Exibe mensagem de erro
+    }
   };
 
   return (
@@ -51,6 +56,13 @@ const InsertBook = () => {
         className="text-center p-10 bg-white/10 backdrop-blur-md rounded-2xl shadow-lg max-w-lg w-full"
       >
         <h1 className="text-4xl font-bold mb-4">Inserir Novo Livro</h1>
+
+        {/* Exibe mensagem de erro se houver */}
+        {errorMessage && (
+          <div className="mb-4 text-red-500">
+            <p>{errorMessage}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input

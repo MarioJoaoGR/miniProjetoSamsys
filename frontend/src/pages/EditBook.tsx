@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getBook, editBook } from "../services/bookService";
-import { getAllAuthors } from "../services/authorService"; // Importamos o serviço de autores
+import { getAllAuthors } from "../services/authorService";
 import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
 
@@ -23,16 +23,25 @@ const EditBook = () => {
 
   const [book, setBook] = useState<Book>({ isbn: "", title: "", authorNif: "", value: "" });
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para mensagem de erro
 
   useEffect(() => {
     const fetchBook = async () => {
-      const data = await getBook(id!);
-      setBook(data);
+      try {
+        const data = await getBook(id!);
+        setBook(data);
+      } catch (error) {
+        setErrorMessage("Failed to fetch book data!"); // Exibe erro ao buscar o livro
+      }
     };
 
     const fetchAuthors = async () => {
-      const authorsData = await getAllAuthors();
-      setAuthors(authorsData);
+      try {
+        const authorsData = await getAllAuthors();
+        setAuthors(authorsData);
+      } catch (error) {
+        setErrorMessage("Failed to fetch authors!"); // Exibe erro ao buscar autores
+      }
     };
 
     fetchBook();
@@ -46,8 +55,12 @@ const EditBook = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await editBook(id!, book.isbn, book.title, book.authorNif, book.value);
-    navigate("/books");
+    try {
+      await editBook(id!, book.isbn, book.title, book.authorNif, book.value);
+      navigate("/books"); // Redireciona após a edição bem-sucedida
+    } catch (error) {
+      setErrorMessage("Failed to update Book!"); 
+    }
   };
 
   return (
@@ -59,6 +72,13 @@ const EditBook = () => {
         className="text-center p-10 bg-white/10 backdrop-blur-md rounded-2xl shadow-lg max-w-lg w-full"
       >
         <h1 className="text-4xl font-bold mb-4">Editar Livro</h1>
+
+        {/* Exibe a mensagem de erro, se houver */}
+        {errorMessage && (
+          <div className="mb-4 text-red-500">
+            <p>{errorMessage}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
