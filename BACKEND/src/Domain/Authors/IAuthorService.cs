@@ -6,5 +6,6 @@ namespace DDDNetCore.Domain.Authors
     public interface IAuthorService
     {
         Task<List<AuthorDto>> GetAllAsync();
+        Task<AuthorDto> GetByIdAsync(AuthorId id);
     }
 }

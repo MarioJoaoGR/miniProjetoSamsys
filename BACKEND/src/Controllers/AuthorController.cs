@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DDDNetCore.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class AuthorController : ControllerBase
     {
 
@@ -21,6 +23,19 @@ namespace DDDNetCore.Controllers
         public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAll()
         {
             return await _service.GetAllAsync();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<AuthorDto>> GetGetById(string id)
+        {
+            var author = await _service.GetByIdAsync(new AuthorId(id));
+
+            if (author == null)
+            {
+                return NotFound();
+            }
+
+            return author;
         }
     }
 }

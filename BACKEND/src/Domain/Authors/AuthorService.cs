@@ -27,6 +27,15 @@ namespace DDDNetCore.Domain.Authors
 
         }
 
+        public async Task<AuthorDto> GetByIdAsync(AuthorId id)
+        {
+
+            var author = await _authorRepository.GetByIdAsync(id);
+            
+
+            return author == null ? null : AuthorMapper.toDto(author);
+        }
+
       
     }
 }

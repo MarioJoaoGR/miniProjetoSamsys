@@ -1,16 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createBook } from "../services/bookService";
+import { getAllAuthors } from "../services/authorService"; // Importa a função para buscar autores
 import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
 
 const InsertBook = () => {
   const navigate = useNavigate();
-  const [book, setBook] = useState({ isbn: "", title: "", authorNif: "", value: "" });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [book, setBook] = useState({
+    isbn: "",
+    title: "",
+    authorNif: "",
+    value: "",
+  });
+
+  const [authors, setAuthors] = useState<{ nif: string; fullName: string }[]>([]);
+
+  // Buscar os autores ao carregar a página
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const authorsData = await getAllAuthors();
+        setAuthors(authorsData); // Atualiza o estado com os autores obtidos
+      } catch (error) {
+        console.error("Erro ao buscar autores:", error);
+      }
+    };
+
+    fetchAuthors();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
     setBook((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -47,20 +69,28 @@ const InsertBook = () => {
             placeholder="Título"
             className="p-2 rounded-xl bg-white text-blue-600 w-full"
           />
-          <input
-            type="text"
+
+          {/* Dropdown para selecionar o NIF do autor */}
+          <select
             name="authorNif"
             value={book.authorNif}
             onChange={handleChange}
-            placeholder="NIF do Autor"
             className="p-2 rounded-xl bg-white text-blue-600 w-full"
-          />
+          >
+            <option value="" disabled>Selecione o Autor (NIF)</option>
+            {authors.map((author) => (
+              <option key={author.nif} value={author.nif}>
+                {author.fullName} ({author.nif})
+              </option>
+            ))}
+          </select>
+
           <input
             type="text"
             name="value"
             value={book.value}
             onChange={handleChange}
-            placeholder="Preço"
+            placeholder="Preço (€)"
             className="p-2 rounded-xl bg-white text-blue-600 w-full"
           />
           <Button
