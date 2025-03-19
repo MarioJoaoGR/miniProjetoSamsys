@@ -10,5 +10,6 @@ namespace DDDNetCore.Domain.Books
         Task<List<Book>> GetByFiltersAsync(string isbn, string title);
         Task<List<Book>> GetAllActiveAsync();
         Task<List<Book>> GetAllInactiveAsync();
+        Task<List<Book>> GetBooksByAuthorAsync(string authorId); 
     }
 }

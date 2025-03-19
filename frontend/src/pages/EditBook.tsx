@@ -4,6 +4,7 @@ import { getBook, editBook } from "../services/bookService";
 import { getAllAuthors } from "../services/authorService";
 import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify"; // Importa o Toastify
 
 const EditBook = () => {
   const { id } = useParams();
@@ -23,15 +24,16 @@ const EditBook = () => {
 
   const [book, setBook] = useState<Book>({ isbn: "", title: "", authorNif: "", value: "" });
   const [authors, setAuthors] = useState<Author[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para mensagem de erro
 
   useEffect(() => {
     const fetchBook = async () => {
       try {
         const data = await getBook(id!);
         setBook(data);
-      } catch (error) {
-        setErrorMessage("Failed to fetch book data!"); // Exibe erro ao buscar o livro
+      } catch (error: any) {
+        // Captura a mensagem do MessagingHelper se estiver disponível
+        const errorMessage = error.response?.data?.message || "Erro ao carregar dados do livro!";
+        toast.error(errorMessage);
       }
     };
 
@@ -39,8 +41,9 @@ const EditBook = () => {
       try {
         const authorsData = await getAllAuthors();
         setAuthors(authorsData);
-      } catch (error) {
-        setErrorMessage("Failed to fetch authors!"); // Exibe erro ao buscar autores
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || "Erro ao carregar dados dos autores!";
+        toast.error(errorMessage);
       }
     };
 
@@ -57,9 +60,12 @@ const EditBook = () => {
     e.preventDefault();
     try {
       await editBook(id!, book.isbn, book.title, book.authorNif, book.value);
-      navigate("/books"); // Redireciona após a edição bem-sucedida
-    } catch (error) {
-      setErrorMessage("Failed to update Book!"); 
+      toast.success("Livro atualizado com sucesso!");
+      navigate("/books"); // Redireciona após sucesso
+    } catch (error: any) {
+      // Captura a mensagem do backend, se disponível
+      const errorMessage = error.response?.data?.message || "Falha ao atualizar o livro!";
+      toast.error(errorMessage);
     }
   };
 
@@ -72,13 +78,6 @@ const EditBook = () => {
         className="text-center p-10 bg-white/10 backdrop-blur-md rounded-2xl shadow-lg max-w-lg w-full"
       >
         <h1 className="text-4xl font-bold mb-4">Editar Livro</h1>
-
-        {/* Exibe a mensagem de erro, se houver */}
-        {errorMessage && (
-          <div className="mb-4 text-red-500">
-            <p>{errorMessage}</p>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -97,7 +96,7 @@ const EditBook = () => {
             placeholder="Título"
             className="p-2 rounded-xl bg-white text-blue-600 w-full"
           />
-          
+
           {/* Dropdown para selecionar o autor */}
           <select
             name="authorNif"

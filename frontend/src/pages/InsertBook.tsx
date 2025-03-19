@@ -4,6 +4,7 @@ import { createBook } from "../services/bookService";
 import { getAllAuthors } from "../services/authorService";
 import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify"; // Toastify importado diretamente
 
 const InsertBook = () => {
   const navigate = useNavigate();
@@ -16,7 +17,8 @@ const InsertBook = () => {
   });
 
   const [authors, setAuthors] = useState<{ nif: string; fullName: string }[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Novo estado para mensagens de erro
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Controla quando validar o autor
 
   // Buscar os autores ao carregar a página
   useEffect(() => {
@@ -24,8 +26,11 @@ const InsertBook = () => {
       try {
         const authorsData = await getAllAuthors();
         setAuthors(authorsData);
-      } catch (error) {
-        console.error("Erro ao buscar autores:", error);
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || "Erro ao buscar autores!";
+        toast.error(errorMessage);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -39,11 +44,20 @@ const InsertBook = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true); // Ativa a validação ao tentar submeter
+
+    if (!book.authorNif) {
+      toast.error("Por favor, selecione um autor!"); // Mensagem só aparece se tentar enviar sem autor
+      return;
+    }
+
     try {
       await createBook(book.isbn, book.title, book.authorNif, book.value);
-      navigate("/books"); // Redireciona após a criação
-    } catch (error) {
-      setErrorMessage("Failed to insert Book!" ); // Exibe mensagem de erro
+      toast.success("Livro inserido com sucesso!");
+      navigate("/books");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Falha ao inserir livro!";
+      toast.error(errorMessage);
     }
   };
 
@@ -57,12 +71,7 @@ const InsertBook = () => {
       >
         <h1 className="text-4xl font-bold mb-4">Inserir Novo Livro</h1>
 
-        {/* Exibe mensagem de erro se houver */}
-        {errorMessage && (
-          <div className="mb-4 text-red-500">
-            <p>{errorMessage}</p>
-          </div>
-        )}
+        {loading && <p className="text-white mb-4">Carregando autores...</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -88,6 +97,7 @@ const InsertBook = () => {
             value={book.authorNif}
             onChange={handleChange}
             className="p-2 rounded-xl bg-white text-blue-600 w-full"
+            disabled={loading || authors.length === 0}
           >
             <option value="" disabled>Selecione o Autor (NIF)</option>
             {authors.map((author) => (
@@ -96,6 +106,11 @@ const InsertBook = () => {
               </option>
             ))}
           </select>
+
+          {/* Mensagem de erro só aparece se tentar submeter sem autor */}
+          {isSubmitting && !book.authorNif && (
+            <p className="text-red-400 text-sm">Selecione um autor antes de enviar!</p>
+          )}
 
           <input
             type="text"

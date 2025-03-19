@@ -3,21 +3,32 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getBook } from "../services/bookService";
 import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify"; // Importa o toast diretamente
 
 const BookDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBook = async () => {
-      const data = await getBook(id!);
-      setBook(data);
+      try {
+        const data = await getBook(id!);
+        setBook(data);
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || "Erro ao carregar dados do livro!";
+        toast.error(errorMessage); // Exibe a mensagem real do backend
+      } finally {
+        setLoading(false);
+      }
     };
     fetchBook();
   }, [id]);
 
-  if (!book) return <div>Loading...</div>;
+  if (loading) return <div className="text-white text-center">Carregando...</div>;
+
+  if (!book) return <div className="text-red-500 text-center">Livro não encontrado.</div>;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-600 to-indigo-900 text-white">

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,50 +20,39 @@ namespace DDDNetCore.Domain.Books
             _authorRepository = authorRepository;
         }
 
-
-        public async Task<BookDto> AddAsync(CreatingBookDto dto)
+        public async Task<MessagingHelper<BookDto>> AddAsync(CreatingBookDto dto)
         {
             bool isbnIsUnique = await validateIsbnIsUnique(dto.Isbn);
             if (!isbnIsUnique)
             {
-                throw new BusinessRuleValidationException("Isbn already exists");
+                return MessagingHelper<BookDto>.ErrorMessage("Isbn already exists", ErrorType.DataHasChanged);
             }
-            var authorNIF = dto.AuthorNIF;
-            var authorName = _authorRepository.GetByNIFAsync(dto.AuthorNIF).Result.FullName.fullName;
 
-            await checkAuthorByNIFAsync(dto.AuthorNIF, dto);
-
-
-
+            var author = await checkAuthorByNIFAsync(dto.AuthorNIF, dto);
+            if (author == null)
+            {
+                return MessagingHelper<BookDto>.ErrorMessage("Author not found", ErrorType.NotFound);
+            }
 
             var book = new Book(dto.Isbn, dto.Title, dto.AuthorNIF, dto.Value);
-
-
-
             await _bookRepository.AddAsync(book);
             await _unitOfWork.CommitAsync();
 
-            return BookMapper.toDto(book, authorNIF, authorName);
-
+            var bookDto = BookMapper.toDto(book, author.NIF.nif, author.FullName.fullName);
+            return MessagingHelper<BookDto>.SuccessMessage(bookDto);
         }
 
-
-        public async Task<BookDto> UpdateAsync(EditingBookDto dto)
+        public async Task<MessagingHelper<BookDto>> UpdateAsync(EditingBookDto dto)
         {
             var book = await _bookRepository.GetByIdAsync(new BookId(dto.Id));
-
             if (book == null)
             {
-                throw new BusinessRuleValidationException("Book not found");
+                return MessagingHelper<BookDto>.ErrorMessage("Book not found", ErrorType.NotFound);
             }
-
-
-
 
             if (!string.IsNullOrWhiteSpace(dto.Title) && !book.Title.title.Equals(dto.Title))
             {
                 book.ChangeTitle(dto.Title);
-
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Isbn) && !book.Isbn.isbn.Equals(dto.Isbn))
@@ -72,10 +60,9 @@ namespace DDDNetCore.Domain.Books
                 bool isbnIsUnique = await validateIsbnIsUnique(dto.Isbn);
                 if (!isbnIsUnique && !book.Isbn.isbn.Equals(dto.Isbn))
                 {
-                    throw new BusinessRuleValidationException("Isbn already exists");
+                    return MessagingHelper<BookDto>.ErrorMessage("Isbn already exists", ErrorType.DataHasChanged);
                 }
                 book.ChangeIsbn(dto.Isbn);
-
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Value) && !book.Value.value.Equals(dto.Value))
@@ -83,234 +70,199 @@ namespace DDDNetCore.Domain.Books
                 book.ChangeValue(dto.Value);
             }
 
-
             if (!string.IsNullOrWhiteSpace(dto.AuthorNIF))
             {
+                var author = await checkAuthorByNIFForEditingAsync(dto.AuthorNIF, dto);
+                if (author == null)
+                {
+                    return MessagingHelper<BookDto>.ErrorMessage("Author not found", ErrorType.NotFound);
+                }
 
-                await checkAuthorByNIFForEditingAsync(dto.AuthorNIF, dto);
                 if (!book.AuthorId.Equals(dto.AuthorNIF))
                 {
                     book.ChangeAuthor(dto.AuthorNIF);
                 }
             }
 
-            var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-            var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
-
-
-
-
-
-
-
             await _unitOfWork.CommitAsync();
 
+            var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
+            var bookDto = BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
 
-
-            return BookMapper.toDto(book, authorNIF, authorName);
-
-
-
+            return MessagingHelper<BookDto>.SuccessMessage(bookDto);
         }
 
-
-        public async Task<BookDto> DeleteAsync(BookId id)
+        public async Task<MessagingHelper<BookDto>> DeleteAsync(BookId id)
         {
             var book = await _bookRepository.GetByIdAsync(id);
-
-            var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-            var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
-
             if (book == null)
             {
-                throw new BusinessRuleValidationException("Book not found");
+                return MessagingHelper<BookDto>.ErrorMessage("Book not found", ErrorType.NotFound);
             }
 
             if (book.bookStatus == BookStatus.Inactive)
             {
-                throw new BusinessRuleValidationException("Book is already inactive");
+                return MessagingHelper<BookDto>.ErrorMessage("Book is already inactive", ErrorType.DataHasChanged);
             }
 
-
+            var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
             book.Deactivate();
-
             await _unitOfWork.CommitAsync();
 
-
-            return BookMapper.toDto(book, authorNIF, authorName);
+            var bookDto = BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
+            return MessagingHelper<BookDto>.SuccessMessage(bookDto);
         }
 
-        public async Task<List<BookDto>> SearchAsync(BookFilterDto dto)
+        public async Task<MessagingHelper<List<BookDto>>> SearchAsync(BookFilterDto dto)
         {
-            
             var books = new List<Book>();
 
-            // Se nenhum filtro for fornecido, retorna todos os livros
-            if (string.IsNullOrWhiteSpace(dto.Isbn) &&
-                string.IsNullOrWhiteSpace(dto.Title) &&
-                string.IsNullOrWhiteSpace(dto.AuthorName) &&
-                string.IsNullOrWhiteSpace(dto.ValueOrder))
+            if (string.IsNullOrWhiteSpace(dto.Isbn) && string.IsNullOrWhiteSpace(dto.Title) && string.IsNullOrWhiteSpace(dto.AuthorName) && string.IsNullOrWhiteSpace(dto.ValueOrder))
             {
                 books = await _bookRepository.GetAllActiveAsync();
             }
             else
             {
-        
-                // Filtragem inicial pelos filtros de ISBN e título
                 books = await _bookRepository.GetByFiltersAsync(dto.Isbn, dto.Title);
-
-                // Se um nome de autor foi fornecido, filtramos os livros pelos autores encontrados
                 if (!string.IsNullOrWhiteSpace(dto.AuthorName))
                 {
                     var authorList = await _authorRepository.FilterByNameAsync(dto.AuthorName);
                     var authorIds = authorList.Select(a => a.Id.Value).ToList();
-
-                    // Filtra os livros que têm um authorId que corresponde aos autores encontrados
                     books = books.Where(b => authorIds.Contains(b.AuthorId)).ToList();
                 }
             }
 
-            // Se houver ordenação por preço, aplicamos a ordenação no final
             if (!string.IsNullOrWhiteSpace(dto.ValueOrder))
             {
                 books = OrderByValue(books, dto.ValueOrder);
             }
 
-
-            // Convert the list of string authorIds to a list of AuthorId objects
             var authorIdsToLoad = books.Select(b => new AuthorId(b.AuthorId)).Distinct().ToList();
             var authors = await _authorRepository.GetByIdsAsync(authorIdsToLoad);
             var authorDictionary = authors.ToDictionary(a => a.Id.Value, a => a);
 
-            // Mapeando os livros para DTOs
-            var result = new List<BookDto>();
-
-            foreach (var book in books)
+            var result = books.Select(book =>
             {
-                // Recupera o autor diretamente do dicionário
                 var author = authorDictionary[book.AuthorId];
+                return BookMapper.toDto(book, author.NIF.nif, author.FullName.fullName);
+            }).ToList();
 
-                // Mapeando o livro para DTO
-                var bookDto = BookMapper.toDto(book, author.NIF.nif, author.FullName.fullName);
+            return MessagingHelper<List<BookDto>>.SuccessMessage(result);
+        }
 
-                result.Add(bookDto);
+        public async Task<MessagingHelper<List<BookDto>>> GetBooksByAuthorAsync(string authorId)
+        {
+            var books = await _bookRepository.GetBooksByAuthorAsync(authorId);
+
+            if (books == null || books.Count == 0)
+            {
+                return MessagingHelper<List<BookDto>>.ErrorMessage("No books found for the given author", ErrorType.NotFound);
             }
 
-            return result;
+            var bookDtos = await Task.WhenAll(books.Select(async book =>
+            {
+                var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
+                return BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
+            }));
+
+            return MessagingHelper<List<BookDto>>.SuccessMessage(bookDtos.ToList());
         }
 
 
-
-
-        public async Task<BookDto> GetByIdAsync(BookId id)
+        public async Task<MessagingHelper<BookDto>> GetByIdAsync(BookId id)
         {
-
             var book = await _bookRepository.GetByIdAsync(id);
-            var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-            var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
+            if (book == null)
+            {
+                return MessagingHelper<BookDto>.ErrorMessage("Book not found", ErrorType.NotFound);
+            }
 
-            return book == null ? null : BookMapper.toDto(book, authorNIF, authorName);
+            var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
+            var bookDto = BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
+
+            return MessagingHelper<BookDto>.SuccessMessage(bookDto);
         }
 
-
-        public async Task<Author> checkAuthorByNIFAsync(string nif, CreatingBookDto book)
+        public async Task<MessagingHelper<List<BookDto>>> GetAllAsync()
         {
-            try
+            var list = await _bookRepository.GetAllAsync();
+            if (list == null || list.Count == 0)
             {
-                var author = await _authorRepository.GetByNIFAsync(nif);
-                if (author == null)
-                {
-                    throw new BusinessRuleValidationException("Author not found");
-                }
-                book.AuthorNIF = author.Id.AsString();
-                return author;
+                return MessagingHelper<List<BookDto>>.ErrorMessage("No books found", ErrorType.NotFound);
             }
-            catch (Exception e)
+
+            var listDto = await Task.WhenAll(list.Select(async book =>
             {
-                throw new BusinessRuleValidationException("Author not Found");
-            }
+                var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
+                return BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
+            }));
+
+            return MessagingHelper<List<BookDto>>.SuccessMessage(listDto.ToList());
         }
 
-        public async Task<Author> checkAuthorByNIFForEditingAsync(string name, EditingBookDto book)
+        // Método para obter todos os livros ativos
+        public async Task<MessagingHelper<List<BookDto>>> GetAllActiveAsync()
         {
-            try
+            var books = await _bookRepository.GetAllActiveAsync();
+            if (books == null || books.Count == 0)
             {
-                var author = await _authorRepository.GetByNIFAsync(name);
-                if (author == null)
-                {
-                    throw new BusinessRuleValidationException("Author not found");
-                }
-                book.AuthorNIF = author.Id.AsString();
-                return author;
+                return MessagingHelper<List<BookDto>>.ErrorMessage("No active books found", ErrorType.NotFound);
             }
-            catch (Exception e)
+
+            var bookDtos = await Task.WhenAll(books.Select(async book =>
             {
-                throw new BusinessRuleValidationException("Author not Found");
-            }
+                var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
+                return BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
+            }));
+
+            return MessagingHelper<List<BookDto>>.SuccessMessage(bookDtos.ToList());
         }
 
+        // Método para obter todos os livros inativos
+        public async Task<MessagingHelper<List<BookDto>>> GetAllInactiveAsync()
+        {
+            var books = await _bookRepository.GetAllInactiveAsync();
+            if (books == null || books.Count == 0)
+            {
+                return MessagingHelper<List<BookDto>>.ErrorMessage("No inactive books found", ErrorType.NotFound);
+            }
 
+            var bookDtos = await Task.WhenAll(books.Select(async book =>
+            {
+                var authorData = await _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId));
+                return BookMapper.toDto(book, authorData.NIF.nif, authorData.FullName.fullName);
+            }));
 
+            return MessagingHelper<List<BookDto>>.SuccessMessage(bookDtos.ToList());
+        }
+
+        private async Task<Author> checkAuthorByNIFAsync(string nif, CreatingBookDto book)
+        {
+            var author = await _authorRepository.GetByNIFAsync(nif);
+            if (author == null)
+            {
+                throw new BusinessRuleValidationException("Author not found");
+            }
+            book.AuthorNIF = author.Id.AsString();
+            return author;
+        }
+
+        private async Task<Author> checkAuthorByNIFForEditingAsync(string nif, EditingBookDto book)
+        {
+            var author = await _authorRepository.GetByNIFAsync(nif);
+            if (author == null)
+            {
+                throw new BusinessRuleValidationException("Author not found");
+            }
+            book.AuthorNIF = author.Id.AsString();
+            return author;
+        }
 
         public async Task<bool> validateIsbnIsUnique(string isbn)
         {
             var existingBook = await _bookRepository.GetByIsbnAsync(isbn);
-            if (existingBook != null)
-            {
-                return false;
-            }
-            return true;
-
+            return existingBook == null;
         }
-
-        public async Task<List<BookDto>> GetAllAsync()
-        {
-            var list = await _bookRepository.GetAllAsync();
-
-            List<BookDto> listDto = new List<BookDto>();
-
-            foreach (Book book in list)
-            {
-                var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-                var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
-                listDto.Add(BookMapper.toDto(book, authorNIF, authorName));
-            }
-            return listDto;
-
-        }
-
-        public async Task<List<BookDto>> GetAllActiveAsync()
-        {
-            var list = await _bookRepository.GetAllActiveAsync();
-
-            List<BookDto> listDto = new List<BookDto>();
-
-            foreach (Book book in list)
-            {
-                var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-                var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
-                listDto.Add(BookMapper.toDto(book, authorNIF, authorName));
-            }
-            return listDto;
-
-        }
-
-        public async Task<List<BookDto>> GetAllInactiveAsync()
-        {
-            var list = await _bookRepository.GetAllInactiveAsync();
-
-            List<BookDto> listDto = new List<BookDto>();
-
-            foreach (Book book in list)
-            {
-                var authorNIF = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.NIF.nif;
-                var authorName = _authorRepository.GetByIdAsync(new AuthorId(book.AuthorId)).Result.FullName.fullName;
-                listDto.Add(BookMapper.toDto(book, authorNIF, authorName));
-            }
-            return listDto;
-
-        }
-
 
         public List<Book> OrderByValue(List<Book> books, string valueOrder)
         {
@@ -322,14 +274,7 @@ namespace DDDNetCore.Domain.Books
             {
                 return books.OrderByDescending(b => decimal.Parse(b.Value.value)).ToList();
             }
-
-            return books; // Retorna sem ordenação se o parâmetro for inválido.
+            return books; // Return without sorting if the parameter is invalid
         }
-
-
-
     }
-
 }
-
-

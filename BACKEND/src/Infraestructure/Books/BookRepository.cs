@@ -63,6 +63,14 @@ namespace DDDNetCore.Infraestructure.Books
                 .ToListAsync();
         }
 
+        public async Task<List<Book>> GetBooksByAuthorAsync(string authorId)
+        {
+            return await this.context.Books
+                .Where(b => b.AuthorId == authorId) // Supondo que a relação entre livro e autor é representada por AuthorId
+                .ToListAsync();
+        }
+
+
 
 
 

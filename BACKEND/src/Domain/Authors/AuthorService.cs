@@ -17,26 +17,50 @@ namespace DDDNetCore.Domain.Authors
             _authorRepository = authorRepository;
         }
 
-        public async Task<List<AuthorDto>> GetAllAsync()
+        public async Task<MessagingHelper<List<AuthorDto>>> GetAllAsync()
         {
             var list = await _authorRepository.GetAllAsync();
 
-            List<AuthorDto> listDto = list.ConvertAll<AuthorDto>(aut => AuthorMapper.toDto(aut));
+            if (list == null || list.Count == 0)
+            {
+                return new MessagingHelper<List<AuthorDto>>
+                {
+                    Success = false,
+                    Message = "Nenhum autor encontrado.",
+                    ErrorType = ErrorType.NotFound
+                };
+            }
 
-            return listDto;
+            List<AuthorDto> listDto = list.ConvertAll(AuthorMapper.toDto);
 
+            return new MessagingHelper<List<AuthorDto>>
+            {
+                Success = true,
+                Message = "Lista de autores obtida com sucesso.",
+                Obj = listDto
+            };
         }
 
-        public async Task<AuthorDto> GetByIdAsync(AuthorId id)
+        public async Task<MessagingHelper<AuthorDto>> GetByIdAsync(AuthorId id)
         {
-
             var author = await _authorRepository.GetByIdAsync(id);
-            
 
-            return author == null ? null : AuthorMapper.toDto(author);
+            if (author == null)
+            {
+                return new MessagingHelper<AuthorDto>
+                {
+                    Success = false,
+                    Message = "Autor não encontrado.",
+                    ErrorType = ErrorType.NotFound
+                };
+            }
+
+            return new MessagingHelper<AuthorDto>
+            {
+                Success = true,
+                Message = "Autor encontrado com sucesso.",
+                Obj = AuthorMapper.toDto(author)
+            };
         }
-
-      
     }
 }
-
